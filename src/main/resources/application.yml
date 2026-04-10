@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/payment_db
     username: postgres
-    password: Rashmitha@2
+    password: secret
     driver-class-name: org.postgresql.Driver
 
 server:
