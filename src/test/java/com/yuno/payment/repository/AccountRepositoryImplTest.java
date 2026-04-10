@@ -71,6 +71,7 @@ class AccountRepositoryImplTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void rowMapperMapsAccountColumns() throws Exception {
         UUID accountId = UUID.randomUUID();
         ResultSet rs = mock(ResultSet.class);

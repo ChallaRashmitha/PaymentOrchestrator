@@ -79,20 +79,6 @@ class PaymentRepositoryImplTest {
         Payment payment = payment();
         payment.setProvider(Provider.PROVIDER_A);
         payment.setTransactionId("txn-1");
-        payment = Payment.builder()
-                .id(payment.getId())
-                .idempotencyKey(payment.getIdempotencyKey())
-                .amount(payment.getAmount())
-                .currency(payment.getCurrency())
-                .method(payment.getMethod())
-                .status(payment.getStatus())
-                .provider(Provider.PROVIDER_A)
-                .fromAccountId(payment.getFromAccountId())
-                .toAccountId(payment.getToAccountId())
-                .transactionId("txn-1")
-                .createdAt(payment.getCreatedAt())
-                .updatedAt(payment.getUpdatedAt())
-                .build();
         when(sqlLoader.loadSql("sql/payments/update_payment.sql")).thenReturn("update-payment");
 
         repository.update(payment);
@@ -108,6 +94,7 @@ class PaymentRepositoryImplTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void rowMapperMapsPaymentColumns() throws Exception {
         UUID paymentId = UUID.randomUUID();
         UUID fromAccountId = UUID.randomUUID();
