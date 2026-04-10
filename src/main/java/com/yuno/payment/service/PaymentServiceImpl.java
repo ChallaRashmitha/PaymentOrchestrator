@@ -9,8 +9,10 @@ import com.yuno.payment.exception.PaymentNotFoundException;
 import com.yuno.payment.factory.ProviderFactory;
 import com.yuno.payment.mapper.PaymentMapper;
 import com.yuno.payment.model.Payment;
+import com.yuno.payment.model.PaymentAttempt;
 import com.yuno.payment.provider.PaymentProvider;
 import com.yuno.payment.provider.PaymentResult;
+import com.yuno.payment.repository.PaymentAttemptRepository;
 import com.yuno.payment.repository.PaymentRepository;
 import com.yuno.payment.repository.IdempotencyRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +33,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final IdempotencyRepository idempotencyRepository;
     private final ProviderFactory providerFactory;
     private final PaymentExecutor executor;
+    private final PaymentAttemptRepository paymentAttemptRepository;
 
     @Transactional
     @Override
@@ -98,14 +101,9 @@ public class PaymentServiceImpl implements PaymentService {
             throw new PaymentNotFoundException(paymentId);
         }
 
-        return PaymentDetailsResponse.builder()
-                .paymentId(payment.getId())
-                .amount(payment.getAmount())
-                .currency(payment.getCurrency())
-                .method(payment.getMethod())
-                .status(payment.getStatus())
-                .provider(payment.getProvider() != null ? payment.getProvider().name() : null)
-                .transactionId(payment.getTransactionId())
-                .build();
+        List<PaymentAttempt> attempts =
+                paymentAttemptRepository.findByPaymentId(paymentId);
+
+        return PaymentMapper.toDetailsResponse(payment, attempts);
     }
 }

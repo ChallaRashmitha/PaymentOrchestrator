@@ -3,6 +3,7 @@ package com.yuno.payment.dto;
 import com.yuno.payment.model.enums.*;
 import lombok.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -18,4 +19,6 @@ public class PaymentDetailsResponse {
     private PaymentStatus status;
     private String provider;
     private String transactionId;
+
+    private List<PaymentAttemptResponse> attempts;
 }

@@ -4,6 +4,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public class JdbcReadDao implements ReadDao {
 
@@ -14,7 +16,7 @@ public class JdbcReadDao implements ReadDao {
     }
 
     @Override
-    public <T> T queryForObject(String sql, RowMapper<T> mapper, Object... params) {
-        return jdbcTemplate.queryForObject(sql, mapper, params);
+    public <T> List<T> query(String sql, RowMapper<T> mapper, Object... params) {
+        return jdbcTemplate.query(sql, mapper, params);
     }
 }

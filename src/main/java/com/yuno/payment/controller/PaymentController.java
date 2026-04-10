@@ -56,4 +56,5 @@ public class PaymentController {
         log.info("Fetch payment completed paymentId={} status={}", response.getPaymentId(), response.getStatus());
         return ResponseEntity.ok(response);
     }
+
 }

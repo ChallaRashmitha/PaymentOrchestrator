@@ -26,7 +26,7 @@ class PaymentOrchestratorTest {
         when(paymentService.createPayment(argThat(request ->
                 request.getAmount().equals(1000L)
                         && request.getCurrency().equals("INR")
-                        && request.getIdempotencyKey().equals("rashmitha-test-123")
+                        && request.getIdempotencyKey().equals("yuno-test-123")
         ))).thenReturn(PaymentResponse.builder()
                 .paymentId(paymentId)
                 .status(PaymentStatus.SUCCESS)
@@ -45,7 +45,7 @@ class PaymentOrchestratorTest {
     @Test
     void runPrintsFailureWhenPaymentServiceThrows() {
         when(paymentService.createPayment(argThat(request ->
-                request.getIdempotencyKey().equals("rashmitha-test-123")
+                request.getIdempotencyKey().equals("yuno-test-123")
         ))).thenThrow(new RuntimeException("failed"));
 
         String output = captureOutput(orchestrator::run);
