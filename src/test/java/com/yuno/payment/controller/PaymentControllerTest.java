@@ -7,6 +7,7 @@ import com.yuno.payment.model.enums.PaymentMethod;
 import com.yuno.payment.model.enums.PaymentStatus;
 import com.yuno.payment.service.PaymentService;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.UUID;
@@ -40,7 +41,7 @@ class PaymentControllerTest {
 
         ResponseEntity<PaymentResponse> response = controller.createPayment(request);
 
-        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).isSameAs(serviceResponse);
         verify(paymentService).createPayment(request);
     }

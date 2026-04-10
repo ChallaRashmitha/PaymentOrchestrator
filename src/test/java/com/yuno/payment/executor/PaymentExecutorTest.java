@@ -64,4 +64,39 @@ class PaymentExecutorTest {
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("All providers failed");
     }
+
+    @Test
+    void throwsWhenProviderListIsNull() {
+        Payment payment = Payment.builder().id(java.util.UUID.randomUUID()).build();
+        PaymentExecutor executor = new PaymentExecutor();
+
+        assertThatThrownBy(() -> executor.execute(null, payment))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("No payment providers available");
+    }
+
+    @Test
+    void throwsWhenProviderListIsEmpty() {
+        Payment payment = Payment.builder().id(java.util.UUID.randomUUID()).build();
+        PaymentExecutor executor = new PaymentExecutor();
+
+        assertThatThrownBy(() -> executor.execute(List.of(), payment))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("No payment providers available");
+    }
+
+    @Test
+    void allProvidersFailedExceptionCarriesLastProviderExceptionAsCause() {
+        PaymentProvider provider = mock(PaymentProvider.class);
+        Payment payment = Payment.builder().build();
+        PaymentExecutor executor = new PaymentExecutor();
+        RuntimeException providerException = new RuntimeException("provider down");
+
+        when(provider.process(payment)).thenThrow(providerException);
+
+        assertThatThrownBy(() -> executor.execute(List.of(provider), payment))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("All providers failed")
+                .hasCause(providerException);
+    }
 }

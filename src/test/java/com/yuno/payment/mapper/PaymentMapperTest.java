@@ -55,4 +55,9 @@ class PaymentMapperTest {
         assertThat(response.getStatus()).isEqualTo(PaymentStatus.SUCCESS);
         assertThat(response.getTransactionId()).isEqualTo("txn-1");
     }
+
+    @Test
+    void canInstantiateMapper() {
+        assertThat(new PaymentMapper()).isNotNull();
+    }
 }

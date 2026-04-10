@@ -1,3 +1,1 @@
-UPDATE payments
-SET status = ?, provider = ?, transaction_id = ?, updated_at = ?
-WHERE id = ?;
+SELECT * FROM payments WHERE idempotency_key = ?;

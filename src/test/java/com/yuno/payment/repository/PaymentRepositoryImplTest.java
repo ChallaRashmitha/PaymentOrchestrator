@@ -94,6 +94,24 @@ class PaymentRepositoryImplTest {
     }
 
     @Test
+    void updateWritesNullProviderWhenPaymentProviderIsAbsent() {
+        Payment payment = payment();
+        payment.setTransactionId("txn-1");
+        when(sqlLoader.loadSql("sql/payments/update_payment.sql")).thenReturn("update-payment");
+
+        repository.update(payment);
+
+        verify(writeDao).update(
+                "update-payment",
+                payment.getStatus().name(),
+                null,
+                payment.getTransactionId(),
+                payment.getUpdatedAt(),
+                payment.getId()
+        );
+    }
+
+    @Test
     @SuppressWarnings("unchecked")
     void rowMapperMapsPaymentColumns() throws Exception {
         UUID paymentId = UUID.randomUUID();

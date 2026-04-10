@@ -1,5 +1,6 @@
 package com.yuno.payment.service;
 
+import com.yuno.payment.exception.InsufficientBalanceException;
 import com.yuno.payment.model.Account;
 import com.yuno.payment.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class AccountServiceImpl implements AccountService {
         boolean success = accountRepository.debit(accountId, amount);
 
         if (!success) {
-            throw new RuntimeException("Insufficient balance");
+            throw new InsufficientBalanceException("Insufficient balance");
         }
     }
 }

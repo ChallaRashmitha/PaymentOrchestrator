@@ -4,6 +4,8 @@ import com.yuno.payment.dto.CreatePaymentRequest;
 import com.yuno.payment.dto.PaymentDetailsResponse;
 import com.yuno.payment.dto.PaymentResponse;
 import com.yuno.payment.executor.PaymentExecutor;
+import com.yuno.payment.exception.PaymentExecutionException;
+import com.yuno.payment.exception.PaymentNotFoundException;
 import com.yuno.payment.factory.ProviderFactory;
 import com.yuno.payment.model.Payment;
 import com.yuno.payment.model.enums.PaymentMethod;
@@ -20,6 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
@@ -66,6 +69,22 @@ class PaymentServiceImplTest {
     }
 
     @Test
+    void createPaymentThrowsWhenIdempotencyRecordPointsToMissingPayment() {
+        UUID paymentId = UUID.randomUUID();
+        CreatePaymentRequest request = request();
+
+        when(idempotencyRepository.exists("key-1")).thenReturn(true);
+        when(idempotencyRepository.getPaymentId("key-1")).thenReturn(paymentId);
+        when(paymentRepository.findById(paymentId)).thenReturn(null);
+
+        assertThatThrownBy(() -> service.createPayment(request))
+                .isInstanceOf(PaymentNotFoundException.class)
+                .hasMessage("Payment not found: " + paymentId);
+        verify(accountService, never()).debit(any(), anyLong());
+        verify(paymentRepository, never()).save(any());
+    }
+
+    @Test
     void createPaymentDebitsExecutesProviderCreditsReceiverAndSavesIdempotencyRecord() {
         CreatePaymentRequest request = request();
         PaymentProvider provider = mock(PaymentProvider.class);
@@ -96,7 +115,7 @@ class PaymentServiceImplTest {
 
         when(idempotencyRepository.exists("key-1")).thenReturn(false);
         when(providerFactory.getProviders(PaymentMethod.CARD)).thenReturn(List.of());
-        when(executor.execute(any(), any())).thenThrow(new RuntimeException("all failed"));
+        when(executor.execute(any(), any())).thenThrow(new PaymentExecutionException("all failed"));
 
         PaymentResponse response = service.createPayment(request);
 
@@ -135,6 +154,36 @@ class PaymentServiceImplTest {
         assertThat(response.getStatus()).isEqualTo(PaymentStatus.SUCCESS);
         assertThat(response.getProvider()).isEqualTo("PROVIDER_B");
         assertThat(response.getTransactionId()).isEqualTo("txn-2");
+    }
+
+    @Test
+    void getPaymentBuildsDetailsResponseWithNullProvider() {
+        UUID paymentId = UUID.randomUUID();
+        Payment payment = Payment.builder()
+                .id(paymentId)
+                .amount(500L)
+                .currency("INR")
+                .method(PaymentMethod.UPI)
+                .status(PaymentStatus.PROCESSING)
+                .provider(null)
+                .transactionId(null)
+                .build();
+        when(paymentRepository.findById(paymentId)).thenReturn(payment);
+
+        PaymentDetailsResponse response = service.getPayment(paymentId);
+
+        assertThat(response.getProvider()).isNull();
+        assertThat(response.getTransactionId()).isNull();
+    }
+
+    @Test
+    void getPaymentThrowsWhenPaymentDoesNotExist() {
+        UUID paymentId = UUID.randomUUID();
+        when(paymentRepository.findById(paymentId)).thenReturn(null);
+
+        assertThatThrownBy(() -> service.getPayment(paymentId))
+                .isInstanceOf(PaymentNotFoundException.class)
+                .hasMessage("Payment not found: " + paymentId);
     }
 
     private CreatePaymentRequest request() {

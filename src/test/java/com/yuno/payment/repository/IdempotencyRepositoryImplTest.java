@@ -4,7 +4,11 @@ import com.yuno.payment.dao.ReadDao;
 import com.yuno.payment.dao.WriteDao;
 import com.yuno.payment.util.SqlLoader;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.RowMapper;
 
+import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.UUID;
 
@@ -36,7 +40,7 @@ class IdempotencyRepositoryImplTest {
     void existsReturnsFalseWhenLookupFails() {
         when(sqlLoader.loadSql("sql/idempotency/find_idempotency.sql")).thenReturn("select-idempotency");
         when(readDao.queryForObject(eq("select-idempotency"), any(), eq("key-1")))
-                .thenThrow(new RuntimeException("not found"));
+                .thenThrow(new EmptyResultDataAccessException(1));
 
         boolean result = repository.exists("key-1");
 
@@ -52,6 +56,23 @@ class IdempotencyRepositoryImplTest {
         UUID result = repository.getPaymentId("key-1");
 
         assertThat(result).isEqualTo(paymentId);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void getPaymentIdRowMapperReadsPaymentIdColumn() throws Exception {
+        UUID paymentId = UUID.randomUUID();
+        ResultSet resultSet = mock(ResultSet.class);
+        when(sqlLoader.loadSql("sql/idempotency/find_idempotency.sql")).thenReturn("select-idempotency");
+        when(resultSet.getString("payment_id")).thenReturn(paymentId.toString());
+
+        repository.getPaymentId("key-1");
+
+        ArgumentCaptor<RowMapper<UUID>> mapperCaptor = ArgumentCaptor.forClass(RowMapper.class);
+        verify(readDao).queryForObject(eq("select-idempotency"), mapperCaptor.capture(), eq("key-1"));
+        UUID mappedPaymentId = mapperCaptor.getValue().mapRow(resultSet, 0);
+
+        assertThat(mappedPaymentId).isEqualTo(paymentId);
     }
 
     @Test

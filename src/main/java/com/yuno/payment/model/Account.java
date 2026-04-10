@@ -1,5 +1,7 @@
 package com.yuno.payment.model;
 
+import com.yuno.payment.exception.InsufficientBalanceException;
+import com.yuno.payment.exception.InvalidPaymentAmountException;
 import lombok.*;
 import java.sql.Timestamp;
 import java.util.UUID;
@@ -17,17 +19,17 @@ public class Account {
 
     public void debit(long amount) {
         if (amount <= 0) {
-            throw new IllegalArgumentException("Amount must be positive");
+            throw new InvalidPaymentAmountException("Amount must be positive");
         }
         if (this.balance < amount) {
-            throw new IllegalArgumentException("Insufficient balance");
+            throw new InsufficientBalanceException("Insufficient balance");
         }
         this.balance -= amount;
     }
 
     public void credit(long amount) {
         if (amount <= 0) {
-            throw new IllegalArgumentException("Amount must be positive");
+            throw new InvalidPaymentAmountException("Amount must be positive");
         }
         this.balance += amount;
     }

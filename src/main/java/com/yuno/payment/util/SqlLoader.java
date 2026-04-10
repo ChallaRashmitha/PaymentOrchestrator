@@ -1,5 +1,6 @@
 package com.yuno.payment.util;
 
+import com.yuno.payment.exception.SqlLoadException;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +16,7 @@ public class SqlLoader {
         try {
             return readResource(resource);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to load SQL: " + path, e);
+            throw new SqlLoadException("Failed to load SQL: " + path, e);
         }
     }
 

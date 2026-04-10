@@ -1,5 +1,7 @@
 package com.yuno.payment.model;
 
+import com.yuno.payment.exception.InsufficientBalanceException;
+import com.yuno.payment.exception.InvalidPaymentAmountException;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,7 +23,7 @@ class AccountTest {
         Account account = Account.builder().balance(1_000L).build();
 
         assertThatThrownBy(() -> account.debit(0L))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidPaymentAmountException.class)
                 .hasMessage("Amount must be positive");
     }
 
@@ -30,7 +32,7 @@ class AccountTest {
         Account account = Account.builder().balance(100L).build();
 
         assertThatThrownBy(() -> account.debit(101L))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InsufficientBalanceException.class)
                 .hasMessage("Insufficient balance");
     }
 
@@ -48,7 +50,7 @@ class AccountTest {
         Account account = Account.builder().balance(100L).build();
 
         assertThatThrownBy(() -> account.credit(-1L))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidPaymentAmountException.class)
                 .hasMessage("Amount must be positive");
     }
 }

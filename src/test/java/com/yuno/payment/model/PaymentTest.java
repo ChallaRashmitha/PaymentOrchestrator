@@ -1,5 +1,6 @@
 package com.yuno.payment.model;
 
+import com.yuno.payment.exception.InvalidPaymentStateException;
 import com.yuno.payment.model.enums.PaymentStatus;
 import org.junit.jupiter.api.Test;
 
@@ -52,7 +53,18 @@ class PaymentTest {
                 .build();
 
         assertThatThrownBy(() -> payment.markSuccess("txn-1"))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(InvalidPaymentStateException.class)
                 .hasMessage("Invalid state transition: CREATED -> SUCCESS");
+    }
+
+    @Test
+    void rejectsCreatedToFailedTransition() {
+        Payment payment = Payment.builder()
+                .status(PaymentStatus.CREATED)
+                .build();
+
+        assertThatThrownBy(payment::markFailed)
+                .isInstanceOf(InvalidPaymentStateException.class)
+                .hasMessage("Invalid state transition: CREATED -> FAILED");
     }
 }

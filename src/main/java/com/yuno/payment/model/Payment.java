@@ -1,5 +1,6 @@
 package com.yuno.payment.model;
 
+import com.yuno.payment.exception.InvalidPaymentStateException;
 import com.yuno.payment.model.enums.*;
 import lombok.*;
 
@@ -48,6 +49,6 @@ public class Payment {
         if (current == PaymentStatus.PROCESSING &&
                 (next == PaymentStatus.SUCCESS || next == PaymentStatus.FAILED)) return;
 
-        throw new IllegalStateException("Invalid state transition: " + current + " -> " + next);
+        throw new InvalidPaymentStateException("Invalid state transition: " + current + " -> " + next);
     }
 }

@@ -4,6 +4,7 @@ import com.yuno.payment.util.SqlLoader;
 import com.yuno.payment.dao.ReadDao;
 import com.yuno.payment.dao.WriteDao;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
@@ -31,7 +32,7 @@ public class IdempotencyRepositoryImpl implements IdempotencyRepository {
         try {
             readDao.queryForObject(sql, (rs, rowNum) -> rs.getObject("payment_id"), key);
             return true;
-        } catch (Exception e) {
+        } catch (EmptyResultDataAccessException e) {
             return false;
         }
     }
